@@ -1,8 +1,14 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Text;
+
 using curso.api.Models.Usuarios;
 using curso.api.Models;
 using curso.api.Filters;
 using Swashbuckle.AspNetCore.Annotations;
+using Microsoft.IdentityModel.Tokens;
+using System.Security.Claims;
+using System;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace curso.api.Controllers
 {
@@ -32,7 +38,38 @@ namespace curso.api.Controllers
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
 		public IActionResult Logar(LoginViewModelInput loginViewModelInput)
 		{
-			return Ok(loginViewModelInput);
+
+			#region Autorizacao
+			var usuarioViewModelOutput = new UsuarioViewModelOutput()
+			{
+				Codigo = 1,
+				Login = "pmoreira",
+				Email = "pmoreira@server.kr"
+			};
+			var secret = Encoding.ASCII.GetBytes("CursoDio2021ModuloConfiguracaoBackendDotNetCore");
+			var symmetricSecurityKey = new SymmetricSecurityKey(secret);
+			var securityTokenDescriptor = new SecurityTokenDescriptor
+			{
+				Subject = new ClaimsIdentity(new Claim[]
+				{
+				new Claim(type: ClaimTypes.NameIdentifier, value: usuarioViewModelOutput.Codigo.ToString()),
+				new Claim(type: ClaimTypes.Name, value: usuarioViewModelOutput.Login.ToString()),
+				new Claim(type: ClaimTypes.Email, value: usuarioViewModelOutput.Email.ToString()),
+				}),
+				Expires = DateTime.UtcNow.AddDays(1),
+				SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
+			};
+			var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
+			var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
+			var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
+
+			#endregion
+
+			return Ok(new
+			{
+				Token = token,
+				Usuario = usuarioViewModelOutput,
+			});
 		}
 
 		/// <summary>
@@ -50,7 +87,7 @@ namespace curso.api.Controllers
 		[SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", type: typeof(LoginViewModelInput))]
 		[SwaggerResponse(statusCode: 400, description: "Campos Obrigatórios.", type: typeof(ValidaCampoViewModelOutput))]
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
-		public IActionResult Registrar(RegistroViewModelInput registroViewModelInput)
+		public IActionResult Registrar(UsuarioViewModelOutput registroViewModelInput)
 		{
 			return Created(nameof(UsuarioController), registroViewModelInput);
 		}
