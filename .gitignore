@@ -361,3 +361,5 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+/curso.api/Models/ValidaCampoViewModelOutput.cs
+/curso.api/Models/ErroGenericoViewModel.cs

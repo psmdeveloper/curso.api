@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>curso.api</name>
+    </assembly>
+    <members>
+        <member name="M:curso.api.Controllers.UsuarioController.Logar(curso.api.Models.Usuarios.LoginViewModelInput)">
+            <summary>
+            Proporciona a acao de logar.
+            </summary>
+            <param name="Login">
+            O formato do objeto esperado é: {Login, Senha}
+            </param>
+            <returns>
+            O formato do objeto esperado é: {Login, Senha}
+            </returns>
+        </member>
+        <member name="M:curso.api.Controllers.UsuarioController.Registrar(curso.api.Models.Usuarios.RegistroViewModelInput)">
+            <summary>
+            Proporciona a acao de registrar um usuario.
+            </summary>
+            <param name="Registrar">
+            O formato do objeto esperado é: {Login, E-mail, Senha}
+            </param>
+            <returns>
+            O formato do objeto esperado é: {Login, E-mail, Senha}
+            </returns>
+        </member>
+    </members>
+</doc>
