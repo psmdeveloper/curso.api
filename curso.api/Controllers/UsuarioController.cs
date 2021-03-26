@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using curso.api.Models.Usuarios;
 using curso.api.Models;
+using curso.api.Filters;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace curso.api.Controllers
@@ -20,6 +21,12 @@ namespace curso.api.Controllers
 		/// </returns>
 		[HttpPost]
 		[Route("Login")]
+		/*
+		 * Adicionado na minha action, metadado para que o pipeline de requisicacao do MVC da minha API
+		 * saiba em qual action o filter deve ser chamado.
+		 */
+		[ValidacaoModelStateCustomizado]
+		// Personalizacoes do swagger para classes de result dos verbos HTTP
 		[SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", type: typeof(LoginViewModelInput))]
 		[SwaggerResponse(statusCode: 400, description: "Campos Obrigatórios.", type: typeof(ValidaCampoViewModelOutput))]
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
@@ -39,6 +46,10 @@ namespace curso.api.Controllers
 		/// </returns>
 		[HttpPost]
 		[Route("Registrar")]
+		[ValidacaoModelStateCustomizado]
+		[SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", type: typeof(LoginViewModelInput))]
+		[SwaggerResponse(statusCode: 400, description: "Campos Obrigatórios.", type: typeof(ValidaCampoViewModelOutput))]
+		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
 		public IActionResult Registrar(RegistroViewModelInput registroViewModelInput)
 		{
 			return Created(nameof(UsuarioController), registroViewModelInput);
