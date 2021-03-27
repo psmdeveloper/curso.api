@@ -1,14 +1,16 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Text;
-
-using curso.api.Models.Usuarios;
-using curso.api.Models;
+﻿using curso.api.Business.Entities;
 using curso.api.Filters;
-using Swashbuckle.AspNetCore.Annotations;
+using curso.api.Infraestrutura.Data;
+using curso.api.Models;
+using curso.api.Models.Usuarios;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
-using System.Security.Claims;
+using Swashbuckle.AspNetCore.Annotations;
 using System;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace curso.api.Controllers
 {
@@ -16,6 +18,19 @@ namespace curso.api.Controllers
 	[ApiController]
 	public class UsuarioController : ControllerBase
 	{
+
+		#region Atributos
+		private readonly CursoContext _context;
+		#endregion
+
+		#region Construtor
+		public UsuarioController(CursoContext context)
+		{
+			_context = context;
+		}
+		#endregion
+
+		#region Ações / Actions
 		/// <summary>
 		/// Proporciona a acao de logar.
 		/// </summary>
@@ -33,6 +48,7 @@ namespace curso.api.Controllers
 		 */
 		[ValidacaoModelStateCustomizado]
 		// Personalizacoes do swagger para classes de result dos verbos HTTP
+		//[Authorize]
 		[SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", type: typeof(LoginViewModelInput))]
 		[SwaggerResponse(statusCode: 400, description: "Campos Obrigatórios.", type: typeof(ValidaCampoViewModelOutput))]
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
@@ -84,12 +100,22 @@ namespace curso.api.Controllers
 		[HttpPost]
 		[Route("Registrar")]
 		[ValidacaoModelStateCustomizado]
+		[Authorize]
 		[SwaggerResponse(statusCode: 200, description: "Sucesso ao autenticar", type: typeof(LoginViewModelInput))]
 		[SwaggerResponse(statusCode: 400, description: "Campos Obrigatórios.", type: typeof(ValidaCampoViewModelOutput))]
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
-		public IActionResult Registrar(UsuarioViewModelOutput registroViewModelInput)
+		public IActionResult Registrar(RegistroViewModelInput registroViewModelInput)
 		{
+			var usuario = new Usuario();
+			usuario.Email = registroViewModelInput.Email;
+			usuario.Login = registroViewModelInput.Login;
+			usuario.Senha = registroViewModelInput.Senha;
+
+			_context.Add(usuario);
+			_context.SaveChanges();
+
 			return Created(nameof(UsuarioController), registroViewModelInput);
 		}
+		#endregion
 	}
 }

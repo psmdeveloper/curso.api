@@ -22,7 +22,7 @@
             O formato do objeto esperado é: {Login, Senha}
             </returns>
         </member>
-        <member name="M:curso.api.Controllers.UsuarioController.Registrar(curso.api.Models.Usuarios.UsuarioViewModelOutput)">
+        <member name="M:curso.api.Controllers.UsuarioController.Registrar(curso.api.Models.Usuarios.RegistroViewModelInput)">
             <summary>
             Proporciona a acao de registrar um usuario.
             </summary>

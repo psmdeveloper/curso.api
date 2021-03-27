@@ -1,18 +1,17 @@
+using curso.api.Infraestrutura.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using System;
 using System.IO;
 using System.Reflection;
-
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 namespace curso.api
 {
@@ -103,6 +102,16 @@ namespace curso.api
 					ValidateAudience = false
 				};
 			});
+			#endregion
+
+			#region Persistência Dados
+			#region Entity Framework Core
+			services.AddDbContext<CursoContext>(options =>
+			{
+				options.UseSqlServer(Configuration.GetConnectionString("curso"));
+			});
+
+			#endregion
 			#endregion
 		}
 
