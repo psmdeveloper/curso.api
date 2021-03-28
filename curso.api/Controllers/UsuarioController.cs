@@ -1,16 +1,25 @@
-﻿using curso.api.Business.Entities;
+﻿#region REFERÊNCIAS
+#region PROJETO
+using curso.api.Business;
+using curso.api.Business.Entities;
+using curso.api.Business.Repositories;
 using curso.api.Filters;
-using curso.api.Infraestrutura.Data;
 using curso.api.Models;
 using curso.api.Models.Usuarios;
+#endregion
+#region PACOTES
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
 using Swashbuckle.AspNetCore.Annotations;
+#endregion
+#region FRAMEWORK
 using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+#endregion
+#endregion
 
 namespace curso.api.Controllers
 {
@@ -19,18 +28,20 @@ namespace curso.api.Controllers
 	public class UsuarioController : ControllerBase
 	{
 
-		#region Atributos
-		private readonly CursoContext _context;
+		#region ATRIBUTOS
+		private readonly IUsuarioRepository _repository;
+		private readonly IAuthenticationService _authentication;
 		#endregion
 
-		#region Construtor
-		public UsuarioController(CursoContext context)
+		#region CONSTRUTOR
+		public UsuarioController(IUsuarioRepository repository, IAuthenticationService authentication)
 		{
-			_context = context;
+			_repository = repository;
+			_authentication = authentication;
 		}
 		#endregion
 
-		#region Ações / Actions
+		#region AÇÕES / ACTIONS
 		/// <summary>
 		/// Proporciona a acao de logar.
 		/// </summary>
@@ -54,38 +65,23 @@ namespace curso.api.Controllers
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
 		public IActionResult Logar(LoginViewModelInput loginViewModelInput)
 		{
-
-			#region Autorizacao
-			var usuarioViewModelOutput = new UsuarioViewModelOutput()
+			var usuario = _repository.ObterUsuario(loginViewModelInput);
+			if (usuario == null)
 			{
-				Codigo = 1,
-				Login = "pmoreira",
-				Email = "pmoreira@server.kr"
+				return BadRequest("Login não localizado.");
+			}
+
+			var usuarioOutput = new UsuarioViewModelOutput
+			{
+				Codigo = usuario.Codigo,
+				Email = usuario.Email,
+				Login = usuario.Login
 			};
-			var secret = Encoding.ASCII.GetBytes("CursoDio2021ModuloConfiguracaoBackendDotNetCore");
-			var symmetricSecurityKey = new SymmetricSecurityKey(secret);
-			var securityTokenDescriptor = new SecurityTokenDescriptor
-			{
-				Subject = new ClaimsIdentity(new Claim[]
-				{
-				new Claim(type: ClaimTypes.NameIdentifier, value: usuarioViewModelOutput.Codigo.ToString()),
-				new Claim(type: ClaimTypes.Name, value: usuarioViewModelOutput.Login.ToString()),
-				new Claim(type: ClaimTypes.Email, value: usuarioViewModelOutput.Email.ToString()),
-				}),
-				Expires = DateTime.UtcNow.AddDays(1),
-				SigningCredentials = new SigningCredentials(symmetricSecurityKey, SecurityAlgorithms.HmacSha256Signature)
-			};
-			var jwtSecurityTokenHandler = new JwtSecurityTokenHandler();
-			var tokenGenerated = jwtSecurityTokenHandler.CreateToken(securityTokenDescriptor);
-			var token = jwtSecurityTokenHandler.WriteToken(tokenGenerated);
 
-			#endregion
+			var token = _authentication.GerarToken(usuarioOutput);
 
-			return Ok(new
-			{
-				Token = token,
-				Usuario = usuarioViewModelOutput,
-			});
+			return Ok(new { Token = token, Usuario = usuarioOutput });
+
 		}
 
 		/// <summary>
@@ -106,15 +102,17 @@ namespace curso.api.Controllers
 		[SwaggerResponse(statusCode: 500, description: "Erro interno.", type: typeof(ErroGenericoViewModel))]
 		public IActionResult Registrar(RegistroViewModelInput registroViewModelInput)
 		{
-			var usuario = new Usuario();
-			usuario.Email = registroViewModelInput.Email;
-			usuario.Login = registroViewModelInput.Login;
-			usuario.Senha = registroViewModelInput.Senha;
+			var usuario = new Usuario
+			{
+				Email = registroViewModelInput.Email,
+				Login = registroViewModelInput.Login,
+				Senha = registroViewModelInput.Senha
+			};
 
-			_context.Add(usuario);
-			_context.SaveChanges();
+			_repository.Adicionar(usuario);
+			_repository.Commit();
 
-			return Created(nameof(UsuarioController), registroViewModelInput);
+			return Created(nameof(UsuarioController), usuario);
 		}
 		#endregion
 	}
