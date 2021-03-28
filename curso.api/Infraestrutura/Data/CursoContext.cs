@@ -7,12 +7,12 @@ namespace curso.api.Infraestrutura.Data
 {
 	public class CursoContext : DbContext
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		public DbSet<Usuario> Usuarios { get; set; }
 		public DbSet<Curso> Cursos { get; set; }
 		#endregion
 
-		#region Construtor
+		#region CONSTRUTOR
 		public CursoContext(DbContextOptions<CursoContext> options)
 			: base(options)
 		{
