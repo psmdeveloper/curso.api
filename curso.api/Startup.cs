@@ -1,4 +1,13 @@
+#region Referências
+
+#region PROJETO
+using curso.api.Business;
+using curso.api.Business.Repositories;
 using curso.api.Infraestrutura.Data;
+using curso.api.Infraestrutura.Data.Repositories;
+#endregion
+
+#region PACOTES
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -8,26 +17,83 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+#endregion
+
+#region FRAMEWORK
 using System;
 using System.IO;
 using System.Reflection;
 using System.Text;
+#endregion
+
+#endregion
 
 namespace curso.api
 {
 	public class Startup
 	{
+		#region PROPRIEDADES
+		public IConfiguration _configuration { get; }
+		#endregion
+
+		#region CONSTRUTOR
 		public Startup(IConfiguration configuration)
 		{
-			Configuration = configuration;
+			_configuration = configuration;
 		}
+		#endregion
 
-		public IConfiguration Configuration { get; }
-
+		#region MÉTODOS
 		// This method gets called by the runtime. Use this method to add services to the container.
 		public void ConfigureServices(IServiceCollection services)
 		{
-			#region Swagger
+
+			#region AUTORIZAÇÃO
+			var secret = Encoding.ASCII.GetBytes(_configuration.GetSection("JwtConfigurations:Secret").Value);
+
+			services.AddAuthentication(a =>
+			{
+				a.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+				a.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+			})
+			.AddJwtBearer(options =>
+			{
+				options.RequireHttpsMetadata = false;
+				options.SaveToken = true;
+				options.TokenValidationParameters = new TokenValidationParameters
+				{
+					ValidateIssuerSigningKey = true,
+					IssuerSigningKey = new SymmetricSecurityKey(secret),
+					ValidateIssuer = false,
+					ValidateAudience = false
+				};
+			});
+			#endregion
+
+			#region PIPELINE
+			services.AddControllers()
+				.ConfigureApiBehaviorOptions(options =>
+				{
+					options.SuppressModelStateInvalidFilter = true;
+				});
+			#endregion
+
+			#region INJEÇÃO DE DEPEND&ENCIA / DEPENDENCY INJECTION
+			services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+			services.AddScoped<ICursoRepository, CursoRepository>();
+			services.AddScoped<IAuthenticationService, JwtService>();
+			#endregion
+
+			#region PERSISTÊNCIA DADOS
+			#region ENTITY FRAMEWORK CORE
+			services.AddDbContext<CursoContext>(options =>
+			{
+				options.UseSqlServer(_configuration.GetConnectionString("DefaultConnection"));
+			});
+			#endregion
+			#endregion
+
+			#region DOCUMENTAÇÃO API : SWAGGER
 			services.AddSwaggerGen(d =>
 				{
 					/* 
@@ -74,50 +140,13 @@ namespace curso.api
 				});
 			#endregion
 
-			#region Pipeline
-			services.AddControllers()
-				.ConfigureApiBehaviorOptions(options =>
-				{
-					options.SuppressModelStateInvalidFilter = true;
-				});
-			#endregion
-
-			#region Autorizacao
-			var secret = Encoding.ASCII.GetBytes(Configuration.GetSection("JwtConfigurations:Secret").Value);
-
-			services.AddAuthentication(a =>
-			{
-				a.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-				a.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-			})
-			.AddJwtBearer(options =>
-			{
-				options.RequireHttpsMetadata = false;
-				options.SaveToken = true;
-				options.TokenValidationParameters = new TokenValidationParameters
-				{
-					ValidateIssuerSigningKey = true,
-					IssuerSigningKey = new SymmetricSecurityKey(secret),
-					ValidateIssuer = false,
-					ValidateAudience = false
-				};
-			});
-			#endregion
-
-			#region Persistência Dados
-			#region Entity Framework Core
-			services.AddDbContext<CursoContext>(options =>
-			{
-				options.UseSqlServer(Configuration.GetConnectionString("curso"));
-			});
-
-			#endregion
-			#endregion
 		}
 
 		// This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
 		public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 		{
+			#region PIPELINE DE REQUISIÇÃO / REQUEST
+
 			if (env.IsDevelopment())
 			{
 				app.UseDeveloperExceptionPage();
@@ -136,8 +165,9 @@ namespace curso.api
 				endpoints.MapControllers();
 			});
 
+			#endregion
 
-			#region Swagger
+			#region SWAGGER
 
 			// Adicionando o middleware do swagger ao Pipeline de requisicoes da API
 			app.UseSwagger();
@@ -154,5 +184,6 @@ namespace curso.api
 			#endregion
 
 		}
+		#endregion
 	}
 }
