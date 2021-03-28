@@ -4,7 +4,7 @@ namespace curso.api.Models.Cursos
 {
 	public class CursoViewModelOutput
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		public string Nome{ get; set; }
 		
 		public string Descricao { get; set; }

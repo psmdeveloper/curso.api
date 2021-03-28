@@ -4,7 +4,7 @@ namespace curso.api.Models.Usuarios
 {
 	public class UsuarioViewModelOutput
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		public int Codigo { get; set; }
 
 		[Required(ErrorMessage = "O login é obrigatorio.")]

@@ -2,7 +2,7 @@
 {
 	public class Curso
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		public int Codigo { get; set; }
 		public string Nome { get; set; }
 		public string Descricao { get; set; }

@@ -4,7 +4,7 @@ namespace curso.api.Models.Cursos
 {
 	public class CursoViewModelInput
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		[Required(ErrorMessage = "Nome é obrigatório.")]
 		public string Nome{ get; set; }
 		

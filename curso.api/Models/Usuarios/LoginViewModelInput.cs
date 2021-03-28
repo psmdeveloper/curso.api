@@ -4,7 +4,7 @@ namespace curso.api.Models.Usuarios
 {
 	public class LoginViewModelInput
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		[Required(ErrorMessage ="O Login é obrigatório.")]
 		public string Login { get; set; }
 		[Required(ErrorMessage ="A Senha é obrigatória.")]

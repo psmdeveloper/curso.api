@@ -2,7 +2,7 @@
 {
 	public class ErroGenericoViewModel
 	{
-		#region Propriedades
+		#region PROPRIEDADES
 		public string Mensagem { get; set; }
 		#endregion
 	}
